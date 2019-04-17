@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Home{% endblock%}
+{% block extrahead%}
+<style type="text/css">
+</style>
+{% endblock%}
+<h1>Curve Fitting lines with OLS </h1>
+{% block content %}
+	{{ block.super }}
+<div class="container">
+	<div class="row">
+		<div class="col">
+			<div class="col">
+				<form method="POST">
+					{% csrf_token %}
+
+				  <div class="form-group">
+				    <label for="years">Years</label>
+				    <input required="true" type="text" class="form-control" id="years" name="years" aria-describedby="emailHelp" placeholder="Separated by comma">
+				  </div>
+				  <div class="form-group">
+				    <label for="values">Values </label>
+				    <input required="true" type="text" class="form-control" id="values" name="values" placeholder="separated by comma">
+				  </div>
+				  <div class="form-group">
+				    <label for="middle">Middle Year</label>
+				    <input required="true" type="text" class="form-control" id="middle" name="middle">
+				  </div>			  
+				  <div class="form-group">
+				    <label for="fittype">Fitting type</label>
+				    <select class="form-control" id="fittype" name="fittype">
+				      <option>straight</option>
+				      <option>exponential</option>
+				      <option>exponential(modified)</option>
+				      <option>Gompertz</option>
+				      <option>Other</option>
+				    </select>
+				  </div>				  
+
+				  <button type="submit" class="btn btn-primary">Submit</button>
+				</form>
+					
+			</div>			
+		</div>
+	</div>	
+	{%if fittype == 'straight' %}
+		<div class="row ">
+			<div class="col">
+				<h3>{{fittype}} curve fitting with ols</h3>
+				<table class="table table-responsive table-striped table-sm">
+				    <tr>
+				      <td class="bold">Years</td>
+						{%for v in years %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+				    <tr>
+				      <td class="bold">X<span class="sub">t</span></td>    	
+						{%for v in xt %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_X_t}}</td>
+				    </tr>
+				    <tr>
+				      <td class="bold">t=Year-{{middle}}</td>
+						{%for v in t %}
+							<td>{{v}}</td>
+						{%endfor%}			
+						<td>{{sum_t}}</td>      
+				    </tr>
+				    <tr>
+				    	<td class="bold">t<span class="super">2</span></td>
+						{%for v in t2 %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_t2}}</td>
+				    </tr>
+				    <tr>
+				    	<td class="bold">t.X<span class="sub">t</span></td>
+						{%for v in txt %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_t_X_t}}</td>
+				    </tr>			    
+				</table>			
+			</div>
+			<div class="col">
+				<p> X&#770; <sub>t</sub> = a&#770; + b&#770; <sub>t</sub></p>
+				<p>
+					b&#770; = (n&#x2211; t*X<sub>t</sub> - &#x2211;t &#x2211;X<sub>t</sub>)/
+					(n&#x2211;t<sup>2</sup>) - (&#x2211;t)<sup>2</sup>)
+				</p>
+				<p>
+					b&#770; = {{b_hat}} <- yearly increment/decrement <br>
+					b&#770;/12 <- monthly increment/decrement
+				</p>
+				<p>
+					a&#770; = {{a_hat}}
+				</p>
+				<p>
+					X&#770;<sub>t</sub> = a&#770; + b&#770;<sub>t</sub> <br>
+					So: X&#770;<sub>t</sub> = {{a_hat}} + {{b_hat}} * t   <- the fitted trend line <br>
+				</p>
+				<table class="table table table-responsive table-striped table-sm">
+				    <tr>
+				      <td class="bold">X<span class="sub">t</span></td>    	
+						{%for v in xt %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+				    <tr>
+				      <td class="bold">X&#770;<sub>t</sub></td>
+						{%for v in x_bar_t %}
+							<td>{{v}}</td>
+						{%endfor%}			      
+				    </tr>
+				    <tr>
+				    	<td class="bold">X<span class="sub">t - X&#770;<sub>t</sub></span></td>
+						{%for v in variation %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+			    
+				</table>			
+
+			</div>
+		</div>	
+	{%elif fittype == 'exponential' %}
+		<div class="row">
+			<div class="col">
+				<p>
+					Y = ab<sup>x</sup> + e<sub>t</sub>
+				</p>
+				<table class="table table-responsive table-striped table-sm">
+				    <tr>
+				      <td class="bold">Years(X)</td>
+						{%for v in years %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+				    <tr>
+				      <td class="bold">Y(Values)</td>    	
+						{%for v in Y %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+				    <tr>
+				      <td class="bold">t=X-{{middle}}</td>
+						{%for v in t %}
+							<td>{{v}}</td>
+						{%endfor%}	
+						<td>{{sum_t}}</td>		      
+				    </tr>
+				    <tr>
+				    	<td class="bold">V = ln Y</td>
+						{%for v in V %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_V}}</td>
+				    </tr>
+				    <tr>
+				    	<td class="bold">t<sup>2</sup></td>
+						{%for v in t2 %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_t2}}</td>
+				    </tr>				    
+				    <tr>
+				    	<td class="bold">t.V</td>
+						{%for v in t_V %}
+							<td>{{v}}</td>
+						{%endfor%}
+						<td>{{sum_t_V}}</td>
+				    </tr>			    
+				</table>
+			</div>		
+			<div class="col">
+				<p>
+					B&#770; = {{B_hat}}<br>
+					A&#770; = {{A_hat}}<br>	
+
+					b&#770; = {{b_hat}}<br>
+					a&#770; = {{a_hat}}<br>							
+				</p>			
+				<p>
+					The fitted exponential curve is: Y&#770; = a&#770;*b&#770;<sup>t</sup> <br>
+					=> {{a_hat}}({{b_hat}})<sup>t</sup>
+				</p>		
+				<table class="table table table-responsive table-striped table-sm">
+				    <tr>
+				      <td class="bold">Y</td>    	
+						{%for v in Y %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+				    <tr>
+				      <td class="bold">Y&#770;</td>
+						{%for v in y_hat %}
+							<td>{{v}}</td>
+						{%endfor%}			      
+				    </tr>
+				    <tr>
+				    	<td class="bold">X<span class="sub">t - X&#770;<sub>t</sub></span></td>
+						{%for v in variation %}
+							<td>{{v}}</td>
+						{%endfor%}
+				    </tr>
+			    
+				</table>							
+			</div>	
+		</div>
+	{%endif%}
+	
+</div>
+{% endblock %}
+
